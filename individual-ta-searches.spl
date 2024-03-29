@@ -1,0 +1,9 @@
+| jira issues 95402 fields "issuetype,components,project,Created,status,resolutiondate,resolution,customfield_13103,customfield_23001,customfield_23000,customfield_23113"
+| table * | bin span=1mon _time | search Components="Crowdstrike FDR"
+| stats count AS "Total" 
+count(eval(Resolution = "Fixed" or Resolution = "Code Fix" or Resolution = "Workaround" or Resolution = "As Designed" or Resolution = "Config Tuning – Miss configurations" or Resolution = "Environment Issues")) as "TA quality issues total"
+by _time
+
+| inputlookup gdi_apps.csv  | search app="Splunk_TA_CrowdStrike_FDR" | sort 0  - _time  | eval mytime=strftime(_time,"%Y-%m-%d") | eval time_one_day_before=strftime(relative_time(now(), "-1d"),"%Y-%m-%d") | where mytime=time_one_day_before| stats sum(Installs) as Total_Installs by version | eventstats sum(Total_Installs) as Total | sort - version |eval Percentage_over_Total_Installs=round(Total_Installs/Total*100,2) | fields - Total
+
+| inputlookup gdi_apps.csv | search app="Splunk_TA_CrowdStrike_FDR" | timechart span=1d sum(Installs) by version useother=f
