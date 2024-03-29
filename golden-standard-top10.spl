@@ -1,0 +1,9 @@
+| jira issues 96487 fields "issuetype,components,project,Created,status,resolutiondate,resolution,customfield_13103,customfield_23001,customfield_23000,customfield_23113"
+| where Resolution = "Fixed" or Resolution = "Code Fix" or Resolution = "Workaround" or Resolution = "As Designed" or Resolution = "Config Tuning – Miss configurations" or Resolution = "Environment Issues"
+| timechart count span=1month
+| timewrap 1year
+| rename 1year_before as last_year
+| rename latest_year as this_year
+| eval percantage_diff = round(((this_year/last_year)-1)*100 ,2)
+| eval month = strftime(_time, "%B")
+| table month, last_year, this_year, percantage_diff
